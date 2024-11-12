@@ -42,15 +42,11 @@ export interface StaticGenericPrompt<TValue, TOptions> {
 
 // deno-lint-ignore no-explicit-any
 export type InferPromptOptions<TPrompt extends GenericPrompt<any, any>> =
-  Parameters<
-    TPrompt["getDefaultSettings"]
-  >[0];
+  Parameters<TPrompt["getDefaultSettings"]>[0];
 
 // deno-lint-ignore no-explicit-any
 export type InferPromptValue<TPrompt extends GenericPrompt<any, any>> = Awaited<
-  ReturnType<
-    TPrompt["prompt"]
-  >
+  ReturnType<TPrompt["prompt"]>
 >;
 
 /** Generic prompt options. */
@@ -111,10 +107,7 @@ export interface GenericPromptKeys {
 }
 
 /** Generic prompt representation. */
-export abstract class GenericPrompt<
-  TValue,
-  TRawValue,
-> {
+export abstract class GenericPrompt<TValue, TRawValue> {
   protected static injectedValue: unknown | undefined;
   protected abstract readonly settings: GenericPromptSettings<
     TValue,
@@ -141,7 +134,7 @@ export abstract class GenericPrompt<
   }
 
   public getDefaultSettings(
-    options: GenericPromptOptions<TValue, TRawValue>,
+    options: GenericPromptOptions<TValue, TRawValue>
   ): GenericPromptSettings<TValue, TRawValue> {
     return {
       ...options,
@@ -187,7 +180,7 @@ export abstract class GenericPrompt<
     await this.render();
     this.#lastError = undefined;
 
-    if (!await this.read()) {
+    if (!(await this.read())) {
       return this.#execute();
     }
 
@@ -200,7 +193,7 @@ export abstract class GenericPrompt<
 
     if (successMessage) {
       this.settings.writer.writeSync(
-        this.#encoder.encode(successMessage + "\n"),
+        this.#encoder.encode(successMessage + "\n")
       );
     }
 
@@ -213,11 +206,7 @@ export abstract class GenericPrompt<
   /** Render prompt. */
   protected async render(): Promise<void> {
     const result: [string, string | undefined, string | undefined] =
-      await Promise.all([
-        this.message(),
-        this.body?.(),
-        this.footer(),
-      ]);
+      await Promise.all([this.message(), this.body?.(), this.footer()]);
 
     const content: string = result.filter(Boolean).join("\n");
     const lines = content.split("\n");
@@ -225,9 +214,9 @@ export abstract class GenericPrompt<
     const columns = getColumns();
     const linesCount: number = columns
       ? lines.reduce((prev, next) => {
-        const length = stripAnsiCode(next).length;
-        return prev + (length > columns ? Math.ceil(length / columns) : 1);
-      }, 0)
+          const length = stripAnsiCode(next).length;
+          return prev + (length > columns ? Math.ceil(length / columns) : 1);
+        }, 0)
       : content.split("\n").length;
 
     const y: number = linesCount - this.cursor.y - 1;
@@ -269,14 +258,18 @@ export abstract class GenericPrompt<
   }
 
   protected message(): string {
-    return `${this.settings.indent}${this.settings.prefix}` +
-      bold(this.settings.message) + this.defaults();
+    return (
+      `${this.settings.indent}${this.settings.prefix}` +
+      bold(this.settings.message) +
+      this.defaults()
+    );
   }
 
   protected defaults(): string {
     let defaultMessage = "";
     if (
-      typeof this.settings.default !== "undefined" && !this.settings.hideDefault
+      typeof this.settings.default !== "undefined" &&
+      !this.settings.hideDefault
     ) {
       defaultMessage += dim(` (${this.format(this.settings.default)})`);
     }
@@ -285,10 +278,15 @@ export abstract class GenericPrompt<
 
   /** Get prompt success message. */
   protected success(value: TValue): string | undefined {
-    return `${this.settings.indent}${this.settings.prefix}` +
-      bold(this.settings.message) + this.defaults() +
-      " " + this.settings.pointer +
-      " " + green(this.format(value));
+    return (
+      `${this.settings.indent}${this.settings.prefix}` +
+      bold(this.settings.message) +
+      this.defaults() +
+      " " +
+      this.settings.pointer +
+      " " +
+      green(this.format(value))
+    );
   }
 
   protected body?(): string | undefined | Promise<string | undefined>;
@@ -306,7 +304,7 @@ export abstract class GenericPrompt<
   protected hint(): string | undefined {
     return this.settings.hint
       ? this.settings.indent +
-        italic(brightBlue(dim(`${Figures.POINTER} `) + this.settings.hint))
+          italic(brightBlue(dim(`${Figures.POINTER} `) + this.settings.hint))
       : undefined;
   }
 
@@ -363,14 +361,11 @@ export abstract class GenericPrompt<
 
   /** Read user input from stdin. */
   #readChar = async (): Promise<Uint8Array> => {
-    const buffer = new Uint8Array(8);
+    const buffer = new Uint8Array(256);
     const isTty = this.settings.reader.isTerminal();
 
     if (isTty) {
-      this.settings.reader.setRaw(
-        true,
-        { cbreak: this.settings.cbreak },
-      );
+      this.settings.reader.setRaw(true, { cbreak: this.settings.cbreak });
     }
     const nread: number | null = await this.settings.reader.read(buffer);
 
@@ -416,10 +411,9 @@ export abstract class GenericPrompt<
     this.#value = undefined;
     this.#lastError = undefined;
 
-    const validation =
-      await (this.settings.validate
-        ? this.settings.validate(value)
-        : this.validate(value));
+    const validation = await (this.settings.validate
+      ? this.settings.validate(value)
+      : this.validate(value));
 
     if (validation === false) {
       this.#lastError = `Invalid answer.`;
@@ -439,15 +433,16 @@ export abstract class GenericPrompt<
   protected isKey<TKey extends unknown, TName extends keyof TKey>(
     keys: TKey | undefined,
     name: TName,
-    event: KeyCode,
+    event: KeyCode
   ): boolean {
     // deno-lint-ignore no-explicit-any
     const keyNames: Array<unknown> | undefined = keys?.[name] as any;
-    return typeof keyNames !== "undefined" && (
-      (typeof event.name !== "undefined" &&
+    return (
+      typeof keyNames !== "undefined" &&
+      ((typeof event.name !== "undefined" &&
         keyNames.indexOf(event.name) !== -1) ||
-      (typeof event.sequence !== "undefined" &&
-        keyNames.indexOf(event.sequence) !== -1)
+        (typeof event.sequence !== "undefined" &&
+          keyNames.indexOf(event.sequence) !== -1))
     );
   }
 }

@@ -39,7 +39,7 @@
     "@cliffy/internal": "jsr:@windmill-labs/cliffy-internal@1.0.0-rc.5",
     "@cliffy/keycode": "jsr:@windmill-labs/cliffy-keycode@1.0.0-rc.5",
     "@cliffy/keypress": "jsr:@windmill-labs/cliffy-keypress@1.0.0-rc.5",
-    "@cliffy/prompt": "jsr:@windmill-labs/cliffy-prompt@1.0.0-rc.5",
+    "@cliffy/prompt": "jsr:@windmill-labs/cliffy-prompt@1.0.0-rc.6",
     "@cliffy/table": "jsr:@windmill-labs/cliffy-table@1.0.0-rc.5",
     "@cliffy/testing": "jsr:@windmill-labs/cliffy-testing@1.0.0-rc.5",
     "@std/assert": "jsr:@std/assert@1.0.0-rc.2",
